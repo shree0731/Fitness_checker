@@ -1,23 +1,23 @@
 import pandas as pd
-# creating dictionary for input of sample dataset
-sample_data = {
-    'Age' : [25, 45, 30, 50, 35, 23],
-    'Gender': ['Male', 'Female', 'Female', 'Male', 'Female', 'Male'],
-    'Weight_in_kg' : [68, 70, 55, 85, 60, 75],
-    'Height_in_cm' : [175, 160, 165, 170, 158, 180],
-    'Sleeping_hours_avg' : [7, 5, 8, 4, 6, 7],
-    'Balanced_Diet' :  ['Yes', 'No', 'Yes', 'No', 'Yes', 'Yes'],
-    'Exercise_type' : ['Daily', 'None', 'Weekly', 'None', 'Daily', 'Weekly'],
-    'Weekly_exercise_Hours': [7, 0, 3, 0, 6, 4],
-    'Is_Fit' : [1, 0, 1, 0, 1, 1] 
-   }
-datas = pd.DataFrame(sample_data) #dataframe
-# print("Initial data: \n ",datas) #prints the table of data created, print(datas.to_string(index=False)) for full data print
-datas['Gender'] = datas['Gender'] .map({'Male' : 0, 'Female' : 1})
-datas['Balanced_Diet'] = datas['Balanced_Diet'] .map({'No' : 0, 'Yes' : 1})
-datas['Exercise_type'] = datas['Exercise_type'] .map({'None' : 0, 'Daily' : 1, 'Weekly': 2})
-datas['BMI'] = datas['Weight_in_kg'] / ((datas['Height_in_cm']/100) **2)
-print("Initial data: \n ",datas)
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+datas = pd.read_csv("fitness_data_synthetic_200.csv") #reading the csv file
+#Data inspection:
+print(datas.head())
+print(datas.info())
+print(datas.isnull().sum())
+print(datas.describe())
+
+#data mapping manually
+datas['Gender'] = datas['Gender'].map({'Male':0, 'Female':1})
+datas['Balanced_Diet'] = datas['Balanced_Diet'].map({'No':0, 'Yes':1})
+datas['Exercise_type'] = datas['Exercise_type'].map({'None':0, 'Weekly':1, 'Daily':2})
+print(datas.head()) #checks if the mapping is done right
+datas['BMI'] = datas['Weight_in_kg'] / ((datas['Height_in_cm'] /100) **2)
+print(datas.isnull().sum()) # for checking for missing values
+
 
 #features and label
 x = datas[['Age', 'Gender', 'Weight_in_kg','Height_in_cm', 'Sleeping_hours_avg', 'Balanced_Diet', 'Exercise_type', 'Weekly_exercise_Hours', 'BMI']]
@@ -34,14 +34,34 @@ clfr.fit(x_train, y_train)
 
 #testing the model based on accuracy, precision, recall, F1( balance btw p,a)
 y_pred = clfr.predict(x_test) #predicting
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 print("Accuracy: ", accuracy_score(y_test, y_pred)) #checking performance
 print("Classification report: \n", classification_report(y_test, y_pred))
 
+#confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+print("This is confusion matrix:", cm)
+
+#Heatmap for cm
+plt.figure(figsize=(5,4))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=['Not Fit', 'Fit'],
+            yticklabels=['Not Fit', 'Fit'])
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix Heatmap')
+plt.show()
+
 #getting input
 print("Enter the following details:\n")
-age = int(input("Age: "))
-gender = 1 if input("Gender (Male/Female): ").lower() == "male" else 1
+print("\nEnter the following details:")
+while True:
+    try:
+        age = int(input("Age: "))
+        break
+    except ValueError:
+        print("Please enter a valid number for age.")
+gender = 0 if input("Gender (Male/Female): ").lower() == "male" else 1
 weight = float(input("Weight (kg): "))
 height = float(input("Height (cm): "))
 sleep = float(input("Sleep (hours): "))
